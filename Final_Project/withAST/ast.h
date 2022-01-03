@@ -1,8 +1,9 @@
 #ifndef _AST_H_
 #define _AST_H_
 
-#include <cstring>
 #include <iostream>
+#include <map>
+#include <string>
 
 enum ASTtype
 {
@@ -25,7 +26,9 @@ enum ASTtype
     ast_or,
     ast_not,
     ast_fun,
+    ast_fun_continue,
     ast_fun_call,
+    ast_params,
     ast_ids,
     ast_define,
     ast_if,
@@ -54,6 +57,7 @@ class ASTnode_id : public ASTnode
 {
 public:
     std::string name;
+    ASTnode *target;
 };
 
 class ASTnode_if : public ASTnode
@@ -61,6 +65,13 @@ class ASTnode_if : public ASTnode
 public:
     ASTnode *statement;
 };
+
+int manipulatemaplength();
+
+bool insertmap(int index, std::string insertname, ASTnode *insertnode);
+bool findmap(int index, std::string findname, ASTnode **targetnode);
+
+ASTnode *duplicatenodes(ASTnode *rootnode);
 
 ASTnode *mallocaddnode(ASTtype newtype, ASTnode *newleft, ASTnode *newright);
 ASTnode *mallocaddnode(ASTtype newtype, ASTnode *newleft, ASTnode *newright, ASTnode *newstatement);
@@ -72,8 +83,11 @@ ASTnode *mallocnode(ASTtype newtype, std::string newname);
 void freenodes(ASTnode *nownode, int freenum);
 
 bool checknode(ASTnode *nownode);
+bool returnnode(ASTnode *nownode, ASTtype prevtype, std::string *returnstring);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *returnnum);
 
-ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype);
+// ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype);
+ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype, std::string targetfunction, ASTnode *paramnodes);
+void printASTtype(ASTtype nowtype);
 
 #endif /* _AST_H_ */

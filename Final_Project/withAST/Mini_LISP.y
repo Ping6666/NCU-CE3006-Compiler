@@ -173,16 +173,14 @@ ids         : variable ids                          {
             | variable ;
 fun_body    : exp ;
 fun_call    : LBC fun_exp params RBC                {
-                                                        // anonymous function
                                                         $$ = mallocaddnode(ast_fun_call, $2, $3);
                                                     }
             | LBC fun_name params RBC               {
-                                                        // named function
                                                         $$ = mallocaddnode(ast_fun_call, $2, $3);
                                                     }
             ;
 params      : exp params                            {
-                                                        $$ = mallocaddnode(ast_continue, $1, $2);
+                                                        $$ = mallocaddnode(ast_params, $1, $2);
                                                     }
             | exp ;
 fun_name    : variable ;
