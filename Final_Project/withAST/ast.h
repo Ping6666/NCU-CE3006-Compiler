@@ -67,7 +67,7 @@ public:
 };
 
 bool insertmap(int index, std::string insertname, ASTnode *insertnode);
-bool findmap(int index, std::string findname, ASTnode **targetnode);
+bool findmap(int index, std::string findname, ASTnode **findnode);
 
 ASTnode *manipulatenodes(ASTnode *idnodes, ASTnode *paramnodes);
 ASTnode *duplicatenodes(ASTnode *rootnode);
@@ -81,7 +81,7 @@ ASTnode *mallocnode(ASTtype newtype, std::string newname);
 
 void freenodes(ASTnode *nownode, int freenum);
 
-bool checknode(ASTnode *nownode);
+bool returntargetnode(ASTnode *nownode, std::string idname);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, std::string *returnstring);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *returnnum);
 

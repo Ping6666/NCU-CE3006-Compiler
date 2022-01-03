@@ -53,7 +53,7 @@ start of grammar overview
 // NOT_OP       ::= (not EXP)
 // DEF_STMT     ::= (define VARIABLE EXP)
 // VARIABLE     ::= id
-// FUN_EXP      ::= (fun FUN_IDs FUN_BODY)   // change fun to STRING_VAL
+// FUN_EXP      ::= (fun FUN_IDs FUN_BODY)
 // FUN_IDs      ::= (id*)
 // FUN_BODY     ::= EXP
 // FUN_CALL     ::= (FUN_EXP PARAM*) | (FUN_NAME PARAM*)
@@ -67,132 +67,66 @@ start of grammar overview
 /*
 End of grammar overview
 */
-/*
-shift/reduce conflict
-*/
-/*
-If the fun_name can be other than FUN, we need to use STRING_VAL to detect fun_name.
-But to do this will lead to bison comile warning shift/reduce conflict [-Wconflicts-sr].
-fun_exp         : LBC STRING_VAL fun_ids fun_body RBC
-*/
 
-program     : stmts                                 {
-                                                        root = $1;
-                                                    }
+program     : stmts                                 { root = $1; }
             ;
-stmts       : stmt stmts                            {
-                                                        $$ = mallocaddnode(ast_root, $1, $2);
-                                                    }
+stmts       : stmt stmts                            { $$ = mallocaddnode(ast_root, $1, $2); }
             | stmt ;
 stmt        : exp | def_stmt | print_stmt ;
-print_stmt  : LBC PRINT_NUM exp RBC                 {
-                                                        $$ = mallocaddnode(ast_print_num, $3, NULL);
-                                                    }
-            | LBC PRINT_BOOL exp RBC                {
-                                                        $$ = mallocaddnode(ast_print_bool, $3, NULL);
-                                                    }
+print_stmt  : LBC PRINT_NUM exp RBC                 { $$ = mallocaddnode(ast_print_num, $3, NULL); }
+            | LBC PRINT_BOOL exp RBC                { $$ = mallocaddnode(ast_print_bool, $3, NULL); }
             ;
-exp         : BOOL_VAL                              {
-                                                        $$ = mallocnode(ast_bool, $1);
-                                                    }
-            | INT_VAL                               {
-                                                        $$ = mallocnode(ast_num, $1);
-                                                    }
+exp         : BOOL_VAL                              { $$ = mallocnode(ast_bool, $1); }
+            | INT_VAL                               { $$ = mallocnode(ast_num, $1); }
             | variable | num_op | logical_op
             | fun_exp | fun_call | if_exp ;
-exps        : exp exps                              {
-                                                        $$ = mallocaddnode(ast_continue, $1, $2);
-                                                    }
+exps        : exp exps                              { $$ = mallocaddnode(ast_continue, $1, $2); }
             | exp ;
 num_op      : plus | minus | multiply | divide
             | modulus | greater | smaller | equal ;
-plus        : LBC TOKEN_PLUS exp exps RBC           {
-                                                        $$ = mallocaddnode(ast_plus, $3, $4);
-                                                    }
+plus        : LBC TOKEN_PLUS exp exps RBC           { $$ = mallocaddnode(ast_plus, $3, $4); }
             ;
-minus       : LBC TOKEN_MINUS exp exp RBC           {
-                                                        $$ = mallocaddnode(ast_minus, $3, $4);
-                                                    }
+minus       : LBC TOKEN_MINUS exp exp RBC           { $$ = mallocaddnode(ast_minus, $3, $4); }
             ;
-multiply    : LBC TOKEN_MULTIPLY exp exps RBC       {
-                                                        $$ = mallocaddnode(ast_multiply, $3, $4);
-                                                    }
+multiply    : LBC TOKEN_MULTIPLY exp exps RBC       { $$ = mallocaddnode(ast_multiply, $3, $4); }
             ;
-divide      : LBC TOKEN_DIVIDE exp exp RBC          {
-                                                        $$ = mallocaddnode(ast_divide, $3, $4);
-                                                    }
+divide      : LBC TOKEN_DIVIDE exp exp RBC          { $$ = mallocaddnode(ast_divide, $3, $4); }
             ;
-modulus     : LBC MOD exp exp RBC                   {
-                                                        $$ = mallocaddnode(ast_mod, $3, $4);
-                                                    }
+modulus     : LBC MOD exp exp RBC                   { $$ = mallocaddnode(ast_mod, $3, $4); }
             ;
-greater     : LBC TOKEN_GREATER exp exp RBC         {
-                                                        $$ = mallocaddnode(ast_greater, $3, $4);
-                                                    }
+greater     : LBC TOKEN_GREATER exp exp RBC         { $$ = mallocaddnode(ast_greater, $3, $4); }
             ;
-smaller     : LBC TOKEN_SMALLER exp exp RBC         {
-                                                        $$ = mallocaddnode(ast_smaller, $3, $4);
-                                                    }
+smaller     : LBC TOKEN_SMALLER exp exp RBC         { $$ = mallocaddnode(ast_smaller, $3, $4); }
             ;
-equal       : LBC TOKEN_EQUAL exp exps RBC          {
-                                                        $$ = mallocaddnode(ast_equal, $3, $4);
-                                                    }
+equal       : LBC TOKEN_EQUAL exp exps RBC          { $$ = mallocaddnode(ast_equal, $3, $4); }
             ;
 logical_op  : and_op | or_op | not_op ;
-and_op      : LBC AND exp exps RBC                  {
-                                                        $$ = mallocaddnode(ast_and, $3, $4);
-                                                    }
+and_op      : LBC AND exp exps RBC                  { $$ = mallocaddnode(ast_and, $3, $4); }
             ;
-or_op       : LBC OR exp exps RBC                   {
-                                                        $$ = mallocaddnode(ast_or, $3, $4);
-                                                    }
+or_op       : LBC OR exp exps RBC                   { $$ = mallocaddnode(ast_or, $3, $4); }
             ;
-not_op      : LBC NOT exp RBC                       {
-                                                        $$ = mallocaddnode(ast_not, $3, NULL);
-                                                    }
+not_op      : LBC NOT exp RBC                       { $$ = mallocaddnode(ast_not, $3, NULL); }
             ;
-def_stmt    : LBC DEFINE variable exp RBC           {
-                                                        $$ = mallocaddnode(ast_define, $3, $4);
-                                                    }
+def_stmt    : LBC DEFINE variable exp RBC           { $$ = mallocaddnode(ast_define, $3, $4); }
             ;
-variable    : STRING_VAL                            {
-                                                        $$ = mallocnode(ast_id, std::string($1));
-                                                    }
+variable    : STRING_VAL                            { $$ = mallocnode(ast_id, std::string($1)); }
             ;
-fun_exp     : LBC FUN fun_ids fun_body RBC          {
-                                                        $$ = mallocaddnode(ast_fun, $3, $4);
-                                                    }
+fun_exp     : LBC FUN fun_ids fun_body RBC          { $$ = mallocaddnode(ast_fun, $3, $4); }
             ;
-fun_ids     : LBC ids RBC                           {
-                                                        $$ = $2;
-                                                    }
+fun_ids     : LBC ids RBC                           { $$ = $2; }
             ;
-ids         : variable ids                          {
-                                                        $$ = mallocaddnode(ast_ids, $1, $2);
-                                                    }
-            |                                       {
-                                                        $$ = NULL;
-                                                    }
+ids         : variable ids                          { $$ = mallocaddnode(ast_ids, $1, $2); }
+            |                                       { $$ = NULL; }
             ;
 fun_body    : exp ;
-fun_call    : LBC fun_exp params RBC                {
-                                                        $$ = mallocaddnode(ast_fun_call, $2, $3);
-                                                    }
-            | LBC fun_name params RBC               {
-                                                        $$ = mallocaddnode(ast_fun_call, $2, $3);
-                                                    }
+fun_call    : LBC fun_exp params RBC                { $$ = mallocaddnode(ast_fun_call, $2, $3); }
+            | LBC fun_name params RBC               { $$ = mallocaddnode(ast_fun_call, $2, $3); }
             ;
-params      : exp params                            {
-                                                        $$ = mallocaddnode(ast_params, $1, $2);
-                                                    }
-            |                                       {
-                                                        $$ = NULL;
-                                                    }
+params      : exp params                            { $$ = mallocaddnode(ast_params, $1, $2); }
+            |                                       { $$ = NULL; }
             ;
 fun_name    : variable ;
-if_exp      : LBC IF test_exp then_exp else_exp RBC {
-                                                        $$ = mallocaddnode(ast_if, $4, $5, $3);
-                                                    }
+if_exp      : LBC IF test_exp then_exp else_exp RBC { $$ = mallocaddnode(ast_if, $4, $5, $3); }
             ;
 test_exp    : exp ;
 then_exp    : exp ;
@@ -205,8 +139,6 @@ void yyerror (const char *message)
 int main(int argc, char *argv[])
 {
     yyparse();
-    printf("START\n");
     ASTprocess(root, ast_root);
-    printf("FINISH\n");
     return(0);
 }
