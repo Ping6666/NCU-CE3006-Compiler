@@ -57,20 +57,19 @@ class ASTnode_id : public ASTnode
 {
 public:
     std::string name;
-    ASTnode *target;
+    ASTnode *target = NULL;
 };
 
 class ASTnode_if : public ASTnode
 {
 public:
-    ASTnode *statement;
+    ASTnode *statement = NULL;
 };
-
-int manipulatemaplength();
 
 bool insertmap(int index, std::string insertname, ASTnode *insertnode);
 bool findmap(int index, std::string findname, ASTnode **targetnode);
 
+ASTnode *manipulatenodes(ASTnode *idnodes, ASTnode *paramnodes);
 ASTnode *duplicatenodes(ASTnode *rootnode);
 
 ASTnode *mallocaddnode(ASTtype newtype, ASTnode *newleft, ASTnode *newright);
@@ -86,8 +85,7 @@ bool checknode(ASTnode *nownode);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, std::string *returnstring);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *returnnum);
 
-// ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype);
-ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype, std::string targetfunction, ASTnode *paramnodes);
+ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype);
 void printASTtype(ASTtype nowtype);
 
 #endif /* _AST_H_ */

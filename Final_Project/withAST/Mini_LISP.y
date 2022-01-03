@@ -170,7 +170,10 @@ fun_ids     : LBC ids RBC                           {
 ids         : variable ids                          {
                                                         $$ = mallocaddnode(ast_ids, $1, $2);
                                                     }
-            | variable ;
+            |                                       {
+                                                        $$ = NULL;
+                                                    }
+            ;
 fun_body    : exp ;
 fun_call    : LBC fun_exp params RBC                {
                                                         $$ = mallocaddnode(ast_fun_call, $2, $3);
@@ -182,7 +185,10 @@ fun_call    : LBC fun_exp params RBC                {
 params      : exp params                            {
                                                         $$ = mallocaddnode(ast_params, $1, $2);
                                                     }
-            | exp ;
+            |                                       {
+                                                        $$ = NULL;
+                                                    }
+            ;
 fun_name    : variable ;
 if_exp      : LBC IF test_exp then_exp else_exp RBC {
                                                         $$ = mallocaddnode(ast_if, $4, $5, $3);
