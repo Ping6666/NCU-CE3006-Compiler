@@ -24,7 +24,7 @@
 %token  <ival>  INT_VAL
 %token  <cval>  STRING_VAL
 
-%type   <nval>  stmt stmts print_stmt def_stmt
+%type   <nval>  stmt stmts print_stmt def_stmt def_stmts
 %type   <nval>  exp exps variable ids params
 %type   <nval>  num_op plus minus multiply divide modulus greater smaller equal
 %type   <nval>  logical_op and_op or_op not_op
@@ -56,6 +56,9 @@ start of grammar overview
 // FUN_EXP      ::= (fun FUN_IDs FUN_BODY)
 // FUN_IDs      ::= (id*)
 // FUN_BODY     ::= EXP
+/* Nested Function */
+// FUN_BODY     ::= DEF_STMT* EXP
+// to do this will got one shift/reduce conflict
 // FUN_CALL     ::= (FUN_EXP PARAM*) | (FUN_NAME PARAM*)
 // PARAM        ::= EXP
 // LAST_EXP     ::= EXP // don't know what is this, pass for now
@@ -118,7 +121,10 @@ fun_ids     : LBC ids RBC                           { $$ = $2; }
 ids         : variable ids                          { $$ = mallocaddnode(ast_ids, $1, $2); }
             |                                       { $$ = NULL; }
             ;
-fun_body    : exp ;
+fun_body    : def_stmts exp                         { $$ = mallocaddnode(ast_fun_body, $1, $2); }
+            | exp ;
+def_stmts   : def_stmt def_stmts                    { $$ = mallocaddnode(ast_def_stmts, $1, $2); }
+            | def_stmt ;
 fun_call    : LBC fun_exp params RBC                { $$ = mallocaddnode(ast_fun_call, $2, $3); }
             | LBC fun_name params RBC               { $$ = mallocaddnode(ast_fun_call, $2, $3); }
             ;
@@ -139,6 +145,6 @@ void yyerror (const char *message)
 int main(int argc, char *argv[])
 {
     yyparse();
-    ASTprocess(root, ast_root);
+    ASTworkhouse(root);
     return(0);
 }

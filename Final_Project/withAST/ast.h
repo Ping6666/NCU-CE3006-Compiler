@@ -1,6 +1,7 @@
 #ifndef _AST_H_
 #define _AST_H_
 
+#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <string>
@@ -28,9 +29,11 @@ enum ASTtype
     ast_fun,
     ast_fun_continue,
     ast_fun_call,
+    ast_fun_body,
     ast_params,
     ast_ids,
     ast_define,
+    ast_def_stmts,
     ast_if,
 };
 
@@ -68,6 +71,7 @@ public:
 
 bool insertmap(int index, std::string insertname, ASTnode *insertnode);
 bool findmap(int index, std::string findname, ASTnode **findnode);
+void freemap();
 
 ASTnode *manipulatenodes(ASTnode *idnodes, ASTnode *paramnodes);
 ASTnode *duplicatenodes(ASTnode *rootnode);
@@ -79,13 +83,15 @@ ASTnode *mallocnode(ASTtype newtype, bool newvalue);
 ASTnode *mallocnode(ASTtype newtype, int newvalue);
 ASTnode *mallocnode(ASTtype newtype, std::string newname);
 
-void freenodes(ASTnode *nownode, int freenum);
+void freenodes(ASTnode *nownode);
 
-bool returntargetnode(ASTnode *nownode, std::string idname);
+bool findidnode(ASTnode *nownode, std::string idname, ASTnode **findnode);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, std::string *returnstring);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *returnnum);
 
 ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype);
 void printASTtype(ASTtype nowtype);
+
+void ASTworkhouse(ASTnode *rootnode);
 
 #endif /* _AST_H_ */
