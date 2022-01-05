@@ -7,7 +7,7 @@
 // index: 1 is for the named fun. map        (can be found by fun. name)
 // index: 2 is for the named fun.'s var. map (can be found by fun. name)
 std::map<std::string, ASTnode *> var_map[maplength];
-ASTnode *id_nodes = NULL; // local id (contain id-param pairs) under a called function
+std::stack<ASTnode *> idparamnodes; // local ids (contain id-param pairs) under a called function
 
 bool insertmap(int index, std::string insertname, ASTnode *insertnode)
 {
@@ -17,7 +17,7 @@ bool insertmap(int index, std::string insertname, ASTnode *insertnode)
     return true;
 }
 
-bool findmap(int index, std::string findname, ASTnode **findnode)
+bool findmap(int index, std::string findname, bool checker, ASTnode **findnode)
 {
     if (index >= maplength || index < 0)
         return false;
@@ -29,12 +29,16 @@ bool findmap(int index, std::string findname, ASTnode **findnode)
         return true;
     }
     /* checker */
-    printf("Find error! Check find str or find field.\n");
+    if (checker)
+        printf("Find error! Check find str or find field.\n");
     return false;
 }
 
 void freemap()
 {
+    /* suspend this function because it poison the tree */
+    return;
+    // free map
     for (int i = 0; i < maplength; i++)
     {
         std::map<std::string, ASTnode *>::iterator mapiter;
@@ -42,7 +46,7 @@ void freemap()
         {
             freenodes(mapiter.second);
         }
-        var_map[i].erase(var_map[i].begin(), var_map[i].end());
+        var_map[i].clear();
     }
     return;
 }
@@ -163,12 +167,25 @@ ASTnode *mallocnode(ASTtype newtype, std::string newname)
     return NULL;
 }
 
+ASTnode *mallocnode(ASTtype newtype, bool newbvalue, int newivalue)
+{
+    if (newtype == ast_equal_result)
+    {
+        ASTnode_equal *newnode = (ASTnode_equal *)malloc(sizeof(ASTnode_equal));
+        newnode->node_type = newtype;
+        newnode->bvalue = newbvalue;
+        newnode->ivalue = newivalue;
+        return (ASTnode *)newnode;
+    }
+    return NULL;
+}
+
 void freenodes(ASTnode *nownode)
 {
+    /* suspend this function because it poison the tree */
+    return;
     if (nownode == NULL)
         return;
-    freenodes(nownode->left);
-    freenodes(nownode->right);
     if (nownode->node_type == ast_if)
     {
         freenodes(((ASTnode_if *)nownode)->statement);
@@ -180,22 +197,27 @@ void freenodes(ASTnode *nownode)
         ((ASTnode_id *)nownode)->name.clear();         // clear contain, not equivalent with free
         ((ASTnode_id *)nownode)->name.shrink_to_fit(); // notify os the space can be reuse, also not equivalent with free
     }
+    freenodes(nownode->left);
+    freenodes(nownode->right);
     free(nownode);
     return;
 }
 
-/* do not free this node, it will cause id_nodes break */
+/* do not free this node, it will cause idparamnodes break */
 bool findidnode(ASTnode *nownode, std::string idname, ASTnode **findnode)
 {
     /* this function has a big time complexity (BIG-O), about O(N) */
     // the input maybe need to change too may global var.
     if (nownode == NULL)
         return false;
-    std::string checkstr;
+    std::string checkstr = "";
     returnnode(nownode, ast_id, &checkstr);
     if (idname == checkstr && ((ASTnode_id *)nownode)->target != NULL)
     {
         *findnode = ((ASTnode_id *)nownode)->target;
+        /* tester */
+        // printf("match node name:%s.\n", checkstr.c_str());
+        // printASTtype(*findnode);
         return true;
     }
     return (findidnode(nownode->left, idname, findnode) || findidnode(nownode->right, idname, findnode));
@@ -215,6 +237,8 @@ bool returnnode(ASTnode *nownode, ASTtype prevtype, std::string *returnstring)
     }
     if (nownode->node_type == ast_ids && prevtype == ast_id)
         return false;
+    /* tester */
+    // printf("(ast_id) ");
     /* checker */
     printf("Type error!\n");
     exit(0); /* dangerous move */
@@ -236,39 +260,38 @@ bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *retur
             *returnnum = ((ASTnode_num *)nownode)->value;
             return true;
         }
+        else if (prevtype == ast_equal_result)
+        {
+            *returnbool = ((ASTnode_equal *)nownode)->bvalue;
+            *returnnum = ((ASTnode_equal *)nownode)->ivalue;
+            return true;
+        }
+    }
+    else if (nownode->node_type == ast_equal_result)
+    {
+        if (prevtype == ast_bool)
+        {
+            *returnbool = ((ASTnode_equal *)nownode)->bvalue;
+            return true;
+        }
     }
     else if (nownode->node_type == ast_id) // define var. or var. inside fun.
     {
         std::string tmpstr;
         returnnode(nownode, ast_id, &tmpstr);
         ASTnode *targetnode = NULL; /* store the target node with same name as tmpstr' */
-        if (id_nodes != NULL)
+        /* checker */
+        if (idparamnodes.empty() && !findmap(0, tmpstr, true, &targetnode))
         {
-            /* var. inside fun. */
+            printf("ID:%s found, but no id list.\n", tmpstr.c_str());
+            exit(0);
+        }
+        if ((!idparamnodes.empty() && findidnode(idparamnodes.top(), tmpstr, &targetnode)) || findmap(0, tmpstr, true, &targetnode))
+        {
+            /* 1st condition var. inside fun. */
             // The local var.s in calling fun. can be found in global var. idnodes.
             // And, it and it's value was been pair by function manipulatenodes.
-            findidnode(id_nodes, tmpstr, &targetnode);
-            if (targetnode != NULL)
-            {
-                if (targetnode->node_type == prevtype)
-                {
-                    if (prevtype == ast_bool)
-                    {
-                        *returnbool = ((ASTnode_bool *)targetnode)->value;
-                        return true;
-                    }
-                    else if (prevtype == ast_num)
-                    {
-                        *returnnum = ((ASTnode_num *)targetnode)->value;
-                        return true;
-                    }
-                }
-            }
-            /* should never walk here */
-        }
-        else if (findmap(0, tmpstr, &targetnode))
-        {
-            /* var. inside global */
+            /* 2nd condition var. inside global */
             if (targetnode->node_type == prevtype)
             {
                 if (prevtype == ast_bool)
@@ -282,10 +305,13 @@ bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *retur
                     return true;
                 }
             }
-            /* should never walk here */
         }
-        /* apparently should never walk here */
+        /* should never walk here */
+        printf("ID:%s found, but no match on idparamnodes tree.\n", tmpstr.c_str());
+        exit(0);
     }
+    /* tester */
+    // printf("(ast_bool, ast_num) ");
     /* checker */
     printf("Type error!\n");
     exit(0); /* dangerous move */
@@ -299,14 +325,46 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
 
     /* pre setting before travel left and right node */
     ASTnode *tmpnode;
+    bool ifbool;
     switch (rootnode->node_type)
     {
     case ast_continue:
         rootnode->node_type = prevtype;
         break;
+    case ast_root:
+        /* prevent stack miss control */
+        while (!idparamnodes.empty())
+        {
+            freenodes(idparamnodes.top());
+            idparamnodes.pop();
+        }
+        break;
     case ast_fun:
         /* ast_fun_continue left tree point to ids, right tree point to exp */
         tmpnode = mallocaddnode(ast_fun_continue, duplicatenodes(rootnode->left), duplicatenodes(rootnode->right));
+        freenodes(rootnode);
+        return tmpnode;
+        break;
+    case ast_if:
+        ((ASTnode_if *)rootnode)->statement = ASTprocess(((ASTnode_if *)rootnode)->statement, rootnode->node_type);
+        returnnode(((ASTnode_if *)rootnode)->statement, ast_bool, &ifbool, NULL);
+        /* tester */
+        // printf("if->statement: ");
+        // printASTtype(((ASTnode_if *)rootnode)->statement);
+        if (ifbool)
+        {
+            /* tester */
+            // printf("if->left: ");
+            // printASTtype(rootnode->left);
+            tmpnode = ASTprocess(duplicatenodes(rootnode->left), rootnode->node_type);
+        }
+        else
+        {
+            /* tester */
+            // printf("if->right: ");
+            // printASTtype(rootnode->right);
+            tmpnode = ASTprocess(duplicatenodes(rootnode->right), rootnode->node_type);
+        }
         freenodes(rootnode);
         return tmpnode;
         break;
@@ -321,13 +379,14 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
 
     // var. for self node
     int leftnum, rightnum;
-    bool leftbool, rightbool, ifbool;
+    bool leftbool, rightbool;
     // var. for additional fun. call
-    std::string tmpstring; // fun. or id name
-    ASTnode *expnodes;
+    ASTnode *expnodes, *tmpidnodes, *targetnode;
+    // fun. or id name
+    std::string tmpstring;
 
-    /* just for testing */
-    // printASTtype(rootnode->node_type);
+    /* tester */
+    // printASTtype(rootnode);
 
     // travel self node
     switch (rootnode->node_type)
@@ -336,33 +395,35 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
         /* should never walk here */
         break;
     case ast_root:
+        /* no further adjustment needed */
         break;
     case ast_print_bool:
         if (returnnode(rootnode->left, ast_bool, &leftbool, NULL))
         {
             if (leftbool)
-            {
                 printf("#t\n");
-            }
             else
-            {
                 printf("#f\n");
-            }
         }
         freenodes(rootnode);
         break;
     case ast_print_num:
         if (returnnode(rootnode->left, ast_num, NULL, &leftnum))
-        {
             printf("%d\n", leftnum);
-        }
         freenodes(rootnode);
         break;
     case ast_bool:
+        /* no further adjustment needed */
         break;
     case ast_num:
+        /* no further adjustment needed */
         break;
     case ast_id:
+        returnnode(rootnode, ast_id, &tmpstring);
+        if ((!idparamnodes.empty() && findidnode(idparamnodes.top(), tmpstring, &targetnode)) || findmap(0, tmpstring, false, &targetnode))
+        {
+            rootnode = targetnode;
+        }
         break;
     case ast_plus:
         returnnode(rootnode->left, ast_num, NULL, &leftnum);
@@ -402,10 +463,12 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
         break;
     case ast_equal:
         returnnode(rootnode->left, ast_num, NULL, &leftnum);
+        rightbool = true; // for (rootnode->right)->node_type is ast_num
+        // (rootnode->right)->node_type should be ast_num or ast_equal_result
         returnnode(rootnode->right, (rootnode->right)->node_type, &rightbool, &rightnum);
+        ifbool = (rightbool && (leftnum == rightnum));
         freenodes(rootnode);
-        ifbool = ((((rootnode->right)->node_type == ast_bool) && (!rightbool)) || (leftnum != rightnum));
-        rootnode = ifbool ? mallocnode(ast_bool, false) : mallocnode(ast_num, leftnum);
+        rootnode = mallocnode(ast_equal_result, ifbool, leftnum);
         break;
     case ast_mod:
         returnnode(rootnode->left, ast_num, NULL, &leftnum);
@@ -444,35 +507,53 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
         if (rootnode->left->node_type == ast_fun_continue) // not ast_fun
         {
             /* 1st fun_exp: anonymous function */
-            id_nodes = duplicatenodes(rootnode->left->left);  // ast_fun_continue left is ids
-            expnodes = duplicatenodes(rootnode->left->right); // ast_fun_continue right is exp
+            tmpidnodes = duplicatenodes(rootnode->left->left); // ast_fun_continue left is ids
+            expnodes = duplicatenodes(rootnode->left->right);  // ast_fun_continue right is exp
         }
-        else /* rootnode->left->node_type should be ast_id */
+        else if (rootnode->left->node_type == ast_id)
         {
             /* 2nd fun_name: named function */
             returnnode(rootnode->left, ast_id, &tmpstring);
-            findmap(1, tmpstring, &expnodes); // use name find exp in index 1
-            findmap(2, tmpstring, &id_nodes); // use name find ids in index 2
+            findmap(1, tmpstring, true, &expnodes);   // use name find exp in index 1
+            findmap(2, tmpstring, true, &tmpidnodes); // use name find ids in index 2
         }
+        else
+        {
+            /* checker */
+            printf("Type match error!\n");
+            exit(0);
+        }
+        /* pair ids with params */
+        tmpidnodes = manipulatenodes(tmpidnodes, duplicatenodes(rootnode->right));
+        /* push for recursive function being travel */
+        idparamnodes.push(tmpidnodes);
         freenodes(rootnode->left);
-        id_nodes = manipulatenodes(id_nodes, rootnode->right);
-        /* reduce expnodes by calling ASTprocess with given global id_nodes */
+        freenodes(rootnode->right);
+        /* tester */
+        // printf("expnodes type: ");
+        // printASTtype(expnodes);
+        /* reduce expnodes by calling ASTprocess with given global idparamnodes */
         rootnode = ASTprocess(expnodes, rootnode->node_type);
-        /* clear global var. id_nodes */
-        // not sure if in multi. level of fun. also need to clear this
-        freenodes(id_nodes);
-        id_nodes = NULL;
+        /* tester */
+        // printf("rootnode: ");
+        // printASTtype(rootnode);
+        if (!idparamnodes.empty() && ((rootnode->node_type == ast_bool) || (rootnode->node_type == ast_num)))
+        {
+            freenodes(idparamnodes.top());
+            idparamnodes.pop();
+        }
         break;
     case ast_fun_body: /* further adjustment needed */
-        if (rootnode->left == NULL)
-        {
-            /* not a nested function */
-            rootnode = rootnode->right;
-        }
+        // if (rootnode->left == NULL)
+        // {
+        //     /* not a nested function */
+        //     rootnode = rootnode->right;
+        // }
         break;
-    case ast_params:
+    case ast_params: /* further adjustment needed */
         break;
     case ast_ids:
+        /* no further adjustment needed */
         break;
     case ast_define:
         returnnode(rootnode->left, ast_id, &tmpstring);
@@ -493,11 +574,7 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
         /* do nothing since no back nodes from ast_define */
         break;
     case ast_if:
-        ((ASTnode_if *)rootnode)->statement = ASTprocess(((ASTnode_if *)rootnode)->statement, rootnode->node_type);
-        returnnode(((ASTnode_if *)rootnode)->statement, ast_bool, &ifbool, NULL);
-        rootnode = ifbool ? duplicatenodes(rootnode->left) : duplicatenodes(rootnode->right);
-        freenodes(rootnode->left);
-        freenodes(rootnode->right);
+        /* should never walk here */
         break;
     default:
         /* should never walk here */
@@ -506,8 +583,14 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
     return rootnode;
 }
 
-void printASTtype(ASTtype nowtype)
+void printASTtype(ASTnode *nownode)
 {
+    /* tester */
+    // return;
+    int nownum;
+    bool nowbool;
+    std::string nowstring;
+    ASTtype nowtype = nownode->node_type;
     switch (nowtype)
     {
     case ast_continue:
@@ -524,13 +607,17 @@ void printASTtype(ASTtype nowtype)
         printf("ast_print_num\n");
         break;
     case ast_bool:
-        printf("ast_bool\n");
+        returnnode(nownode, ast_bool, &nowbool, NULL);
+        nowstring = nowbool ? "#t" : "#f";
+        printf("ast_bool: %s.\n", nowstring.c_str());
         break;
     case ast_num:
-        printf("ast_num\n");
+        returnnode(nownode, ast_num, NULL, &nownum);
+        printf("ast_num: %d.\n", nownum);
         break;
     case ast_id:
-        printf("ast_id\n");
+        returnnode(nownode, ast_id, &nowstring);
+        printf("ast_id: %s.\n", nowstring.c_str());
         break;
     case ast_plus:
         printf("ast_plus\n");

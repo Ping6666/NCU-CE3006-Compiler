@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <stack>
 #include <string>
 
 enum ASTtype
@@ -22,6 +23,7 @@ enum ASTtype
     ast_greater,
     ast_smaller,
     ast_equal,
+    ast_equal_result,
     ast_mod,
     ast_and,
     ast_or,
@@ -69,8 +71,15 @@ public:
     ASTnode *statement = NULL;
 };
 
+class ASTnode_equal : public ASTnode
+{
+public:
+    bool bvalue;
+    int ivalue;
+};
+
 bool insertmap(int index, std::string insertname, ASTnode *insertnode);
-bool findmap(int index, std::string findname, ASTnode **findnode);
+bool findmap(int index, std::string findname, bool checker, ASTnode **findnode);
 void freemap();
 
 ASTnode *manipulatenodes(ASTnode *idnodes, ASTnode *paramnodes);
@@ -90,7 +99,7 @@ bool returnnode(ASTnode *nownode, ASTtype prevtype, std::string *returnstring);
 bool returnnode(ASTnode *nownode, ASTtype prevtype, bool *returnbool, int *returnnum);
 
 ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype);
-void printASTtype(ASTtype nowtype);
+void printASTtype(ASTnode *nownodes);
 
 void ASTworkhouse(ASTnode *rootnode);
 
