@@ -13,7 +13,8 @@ bool insertmap(int index, std::string insertname, ASTnode *insertnode)
 {
     if (index >= maplength || index < 0)
         return false;
-    var_map[index].insert(std::pair<std::string, ASTnode *>(insertname, duplicatenodes(insertnode)));
+    ASTnode *tmpnode = duplicatenodes(insertnode);
+    var_map[index].insert(std::pair<std::string, ASTnode *>(insertname, tmpnode));
     return true;
 }
 
@@ -87,7 +88,8 @@ ASTnode *duplicatenodes(ASTnode *rootnode)
     else if (rootnode->node_type == ast_id)
     {
         newnode = mallocnode(rootnode->node_type, ((ASTnode_id *)rootnode)->name);
-        ((ASTnode_id *)newnode)->target = duplicatenodes(((ASTnode_id *)rootnode)->target);
+        ((ASTnode_id *)newnode)->target = ((ASTnode_id *)rootnode)->target;
+        // ((ASTnode_id *)newnode)->target = duplicatenodes(((ASTnode_id *)rootnode)->target);
     }
     else if (rootnode->node_type == ast_if)
     {
@@ -160,7 +162,8 @@ ASTnode *mallocnode(ASTtype newtype, std::string newname)
     {
         ASTnode_id *newnode = (ASTnode_id *)malloc(sizeof(ASTnode_id));
         newnode->node_type = newtype;
-        /* may contain possible error, see c++ string cow rule. */
+        /* may contain possible error (seg. fault), see c++ string cow rule. */
+        // BUG under renewing a std::string (Bonus 3: exps under same fun_body)
         newnode->name = newname;
         return (ASTnode *)newnode;
     }
@@ -543,12 +546,11 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
             idparamnodes.pop();
         }
         break;
-    case ast_fun_body: /* further adjustment needed */
-        // if (rootnode->left == NULL)
-        // {
-        //     /* not a nested function */
-        //     rootnode = rootnode->right;
-        // }
+    case ast_fun_body:               /* further adjustment needed */
+        if (rootnode->right != NULL) // do not know why it just work
+            rootnode = rootnode->right;
+        else
+            rootnode = rootnode->left;
         break;
     case ast_params: /* further adjustment needed */
         break;
@@ -569,9 +571,6 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
             insertmap(0, tmpstring, rootnode->right);
         }
         freenodes(rootnode);
-        break;
-    case ast_def_stmts: /* further adjustment needed */
-        /* do nothing since no back nodes from ast_define */
         break;
     case ast_if:
         /* should never walk here */
@@ -672,9 +671,6 @@ void printASTtype(ASTnode *nownode)
         break;
     case ast_define:
         printf("ast_define\n");
-        break;
-    case ast_def_stmts:
-        printf("ast_def_stmts\n");
         break;
     case ast_if:
         printf("ast_if\n");

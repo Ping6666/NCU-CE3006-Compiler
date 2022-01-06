@@ -28,7 +28,7 @@
 %type   <nval>  exp exps variable ids params
 %type   <nval>  num_op plus minus multiply divide modulus greater smaller equal
 %type   <nval>  logical_op and_op or_op not_op
-%type   <nval>  fun_exp fun_ids fun_body fun_call fun_name
+%type   <nval>  fun_exp fun_ids fun_body fun_call fun_name fun_stmts fun_stmt
 %type   <nval>  if_exp test_exp then_exp else_exp
 %%
 /*
@@ -66,13 +66,6 @@ start of grammar overview
 // TEST_EXP     ::= EXP
 // THEN_EXP     ::= EXP
 // ELSE_EXP     ::= EXP
-
-// bonus 3: to do this will got one shift/reduce conflict
-// %type   <nval>  def_stmts
-// fun_body    : def_stmts exp                         { $$ = mallocaddnode(ast_fun_body, $1, $2); }
-//             | exp ;
-// def_stmts   : def_stmt def_stmts                    { $$ = mallocaddnode(ast_def_stmts, $1, $2); }
-//             | def_stmt ;
 /*
 End of grammar overview
 */
@@ -122,12 +115,15 @@ variable    : STRING_VAL                            { $$ = mallocnode(ast_id, st
             ;
 fun_exp     : LBC FUN fun_ids fun_body RBC          { $$ = mallocaddnode(ast_fun, $3, $4); }
             ;
+fun_stmts   : fun_stmt fun_stmts                    { $$ = mallocaddnode(ast_fun_body, $1, $2); }
+            | fun_stmt ;
+fun_stmt    : exp | def_stmt ;
 fun_ids     : LBC ids RBC                           { $$ = $2; }
             ;
 ids         : variable ids                          { $$ = mallocaddnode(ast_ids, $1, $2); }
             |                                       { $$ = NULL; }
             ;
-fun_body    : exp ;
+fun_body    : fun_stmts ;
 fun_call    : LBC fun_exp params RBC                { $$ = mallocaddnode(ast_fun_call, $2, $3); }
             | LBC fun_name params RBC               { $$ = mallocaddnode(ast_fun_call, $2, $3); }
             ;

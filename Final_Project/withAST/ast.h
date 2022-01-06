@@ -1,7 +1,6 @@
 #ifndef _AST_H_
 #define _AST_H_
 
-#include <cstdlib>
 #include <iostream>
 #include <map>
 #include <stack>
@@ -35,7 +34,6 @@ enum ASTtype
     ast_params,
     ast_ids,
     ast_define,
-    ast_def_stmts,
     ast_if,
 };
 
