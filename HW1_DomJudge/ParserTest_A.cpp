@@ -107,8 +107,6 @@ int main()
     }
     stringManipulate();
 
-    // std::cout << tmp << "\n";
-
     if (GETstmts(0) < 0)
     {
         std::cout << "invalid input\n";
@@ -125,7 +123,6 @@ Productions
 
 int GETstmts(int index)
 {
-    // std::cout << "GETstmts " << index << '\n';
     int index_ = GETstmt(index);
     index += index_; // this shoud not do first, but it is ok to do first here
     if (index_ < 0)
@@ -151,7 +148,6 @@ int GETstmts(int index)
 
 int GETstmt(int index)
 {
-    // std::cout << "GETstmt " << index << '\n';
     int index_1 = GETprimary(index);
     if (index_1 < 0)
     {
@@ -171,7 +167,6 @@ int GETstmt(int index)
 
 int GETprimary(int index)
 {
-    // std::cout << "GETprimary " << index << '\n';
     int index_1 = GET_ID(index);
     if (index_1 < 0)
     {
@@ -189,7 +184,6 @@ int GETprimary(int index)
 
 int GETprimary_tail(int index)
 {
-    // std::cout << "GETprimary_tail " << index << '\n';
     int index_1 = GET_DOT(index);
     if (index_1 < 0)
     {
@@ -245,17 +239,14 @@ Terminal: Regular Expression
 
 int GET_ID(int index, bool first)
 {
-    // std::cout << "GET_ID " << index << '\n';
     if (first) // first time call GET_ID (smaller rule)
     {
         if (((tmp[index] >= 'a') && (tmp[index] <= 'z')) || ((tmp[index] >= 'A') && (tmp[index] <= 'Z')) || (tmp[index] == '_'))
         {
-            // std::cout << "GET_ID: GOOD!!!" << '\n';
             ansForm.push_back(AnsForm("ID", tmp[index]));
             int index_ = GET_ID(index + 1, false);
             if (index_ < 0)
             {
-                // ansForm.pop_back();
                 return -1;
             }
             return index_ + 1;
@@ -265,7 +256,6 @@ int GET_ID(int index, bool first)
             int index_ = GET_ID(index + 1, true);
             if (index_ < 0)
             {
-                // ansForm.pop_back();
                 return -1;
             }
             return index_ + 1;
@@ -297,12 +287,10 @@ int GET_ID(int index, bool first)
 
 int GET_STRLIT(int index, bool first)
 {
-    // std::cout << "GET_STRLIT " << index << '\n';
     if (first) // first time call GET_STRLIT (left)
     {
         if (tmp[index] == '"')
         {
-            // std::cout << "GET_STRLIT: GOOD!!!" << '\n';
             ansForm.push_back(AnsForm("STRLIT", ""));
             return GET_STRLIT(index + 1, false) + 1;
         }
@@ -311,7 +299,6 @@ int GET_STRLIT(int index, bool first)
             int index_ = GET_STRLIT(index + 1, true);
             if (index_ < 0)
             {
-                // ansForm.pop_back();
                 return -1;
             }
             return index_ + 1;
@@ -340,10 +327,8 @@ int GET_STRLIT(int index, bool first)
 
 int GET_LBR(int index)
 {
-    // std::cout << "GET_LBR " << index << '\n';
     if (tmp[index] == '(')
     {
-        // std::cout << "GET_LBR: GOOD!!!" << '\n';
         ansForm.push_back(AnsForm("LBR", "("));
         return 1;
     }
@@ -361,10 +346,8 @@ int GET_LBR(int index)
 
 int GET_RBR(int index)
 {
-    // std::cout << "GET_RBR " << index << '\n';
     if (tmp[index] == ')')
     {
-        // std::cout << "GET_RBR: GOOD!!!" << '\n';
         ansForm.push_back(AnsForm("RBR", ")"));
         return 1;
     }
@@ -382,10 +365,8 @@ int GET_RBR(int index)
 
 int GET_DOT(int index)
 {
-    // std::cout << "GET_DOT " << index << '\n';
     if (tmp[index] == '.')
     {
-        // std::cout << "GET_DOT: GOOD!!!" << '\n';
         ansForm.push_back(AnsForm("DOT", "."));
         return 1;
     }

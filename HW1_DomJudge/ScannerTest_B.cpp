@@ -77,7 +77,5 @@ int main()
         id++;
     }
 
-    // std::cout << tmp << std::endl;
-
     return 0;
 }
