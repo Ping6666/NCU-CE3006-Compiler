@@ -1,6 +1,5 @@
 %{
     #include <stdio.h>
-    #include <stdlib.h>
     int yylex();
     void yyerror (const char *message);
 %}
@@ -17,11 +16,9 @@
     int num;
     struct IntArr intArr;
 }
-%token  ADDITION
-%token  MULTIPLY
+%token  ADDITION MULTIPLY
 %token  COMMA
-%token  LBRACKET
-%token  RBRACKET
+%token  LBRACKET RBRACKET
 %token  <num>   DIGITS
 
 %type   <intArr>    Sum Term List ListItem

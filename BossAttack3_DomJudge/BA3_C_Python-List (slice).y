@@ -127,13 +127,10 @@ List        : LBRACKET ListItem RBRACKET Slice  {
                                                     {
                                                         $4.value1 += $2.length;
                                                     }
-                                                    // printf("S:%d\n", $4.value1);
                                                     if ($4.value2 < 0) // end
                                                     {
                                                         $4.value2 += $2.length;
                                                     }
-                                                    // printf("E:%d\n", $4.value2);
-                                                    // printf("J:%d\n", $4.stepnum);
                                                     int i;
                                                     int counter = 0;
                                                     for(i = $4.value1; i < $2.length; i += $4.stepnum)
@@ -159,7 +156,7 @@ Slice       : LBRACKET StartIndex COLON EndIndex RBRACKET               {
                                                                         }
             |                                                           {
                                                                             $$.value1 = 0;
-                                                                            $$.value2 = 100000;
+                                                                            $$.value2 = 100000;  // larger than length
                                                                             $$.stepnum = 1;
                                                                         }
             ;
@@ -174,7 +171,7 @@ EndIndex    : DIGITS    {
                             $$ = $1;
                         }
             |           {
-                            $$ = 100000;
+                            $$ = 100000;  // larger than length
                         }
             ;
 Step        : DIGITS    {
