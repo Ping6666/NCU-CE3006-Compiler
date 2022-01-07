@@ -165,6 +165,7 @@ ASTnode *mallocnode(ASTtype newtype, std::string newname)
         /* may contain possible error (seg. fault), see c++ string cow rule. */
         // BUG under renewing a std::string (Bonus 3: exps under same fun_body)
         newnode->name = newname;
+        // newnode->name.assign(newname, 0, newname.size());
         return (ASTnode *)newnode;
     }
     return NULL;
