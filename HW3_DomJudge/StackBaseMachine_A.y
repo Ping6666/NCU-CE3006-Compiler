@@ -9,13 +9,8 @@
 {
     int ival;
 }
-%token  ADD
-%token  SUB
-%token  MUL
-%token  MOD
-%token  LOAD
-%token  INC
-%token  DEC
+%token  ADD SUB MUL MOD LOAD
+%token  INC DEC
 %token  <ival>  INUMBER
 %type   <ival>  expr
 %%

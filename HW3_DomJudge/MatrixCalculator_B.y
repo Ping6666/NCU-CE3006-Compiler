@@ -19,12 +19,9 @@
 }
 %token  <loc> ADDSUB
 %token  <loc> MUL
-%token  COMMA
-%token  LSBC
-%token  RSBC
-%token  LBC
-%token  RBC
-%token  TP
+%token  COMMA TP
+%token  LSBC RSBC
+%token  LBC RBC
 %token  <ival> NUM
 %type   <tokenMatrix> matrix
 
@@ -37,9 +34,9 @@ line    : matrix                    {
                                         return(0);
                                     }
         ;
-matrix  : LSBC NUM COMMA NUM RSBC   { $$.i = $2;    $$.j = $4;      }
-        | LBC matrix RBC            { $$.i = $2.i;  $$.j = $2.j;    }
-        | matrix TP                 { $$.i = $1.j;  $$.j = $1.i;    }
+matrix  : LSBC NUM COMMA NUM RSBC   { $$.i = $2;    $$.j = $4;   }
+        | LBC matrix RBC            { $$.i = $2.i;  $$.j = $2.j; }
+        | matrix TP                 { $$.i = $1.j;  $$.j = $1.i; }
         | matrix MUL matrix         {
                                         if ($1.j == $3.i)
                                         {
