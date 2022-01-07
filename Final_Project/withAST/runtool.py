@@ -1,6 +1,7 @@
 import os
 
-workBase = "./test_data"
+bhidden = True
+workBase = "./hidden_data" if bhidden else "./test_data"
 i, willDoNum = 0, 16
 for dirPath, dirNames, fileNames in os.walk(workBase):
     for curr_file in sorted(fileNames):

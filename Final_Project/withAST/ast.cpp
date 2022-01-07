@@ -186,6 +186,7 @@ ASTnode *mallocnode(ASTtype newtype, bool newbvalue, int newivalue)
 
 void freenodes(ASTnode *nownode)
 {
+    /* tester */
     /* suspend this function because it poison the tree */
     return;
     if (nownode == NULL)
@@ -547,13 +548,11 @@ ASTnode *ASTprocess(ASTnode *rootnode, ASTtype prevtype)
             idparamnodes.pop();
         }
         break;
-    case ast_fun_body:               /* further adjustment needed */
-        if (rootnode->right != NULL) // do not know why it just work
-            rootnode = rootnode->right;
-        else
-            rootnode = rootnode->left;
+    case ast_fun_body:
+        rootnode = rootnode->right; // do not know why it just work
         break;
-    case ast_params: /* further adjustment needed */
+    case ast_params:
+        /* no further adjustment needed */
         break;
     case ast_ids:
         /* no further adjustment needed */
