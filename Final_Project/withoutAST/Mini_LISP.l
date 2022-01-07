@@ -2,7 +2,6 @@
 %{
     #include <stdbool.h>
     #include "Mini_LISP.tab.h"
-    // "fun"               { return FUN; }
 %}
 %%
 \n                  { /* do nothing */ }
