@@ -2,15 +2,10 @@
     int tabCount = 0;
     void printTab()
     {
-        /*
-        printf("%d", tabCount);
-        */
-        ///*
         for (int i = 0; i < tabCount; i++)
         {
             printf("\t");
         }
-        //*/
     }
 %}
 %%

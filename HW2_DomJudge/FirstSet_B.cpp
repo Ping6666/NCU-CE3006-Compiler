@@ -2,6 +2,23 @@
 #include <iostream>
 #include <vector>
 
+/*
+FIRST
+*/
+// To compute FIRST(X) for grammar symbol X, apply the following rules until no more terminals or λ can be added to it.
+// If X is a terminal , then FIRST(X)={X}
+// If X is a non-terminal and X → Y1Y2…Yk is a production for some k>=1, then place “a” in FIRST(X) if for some i, “a” is in FIRST(Yi), and λ is in all of FIRST(Y1),…,FIRST(Yi-1). If λ is in FIRST(Yj) for all j=1,2,…,k, then add λ to FIRST(X).
+// If X → λ is a production, then add λ to FIRST(X).
+
+/*
+FOLLOW
+*/
+// To compute FOLLOW(B) for non-terminal B:
+// Place $ in FOLLOW(S), where S is the start symbol, and $ is the input right end-marker.
+// if there is a production A → α B β, then everything in FIRST(β) except λ is in FOLLOW(B).
+// (a) if there is a production A → α B,
+// (b) or A → α B β, where FIRST(β) contains λ, then everything in FOLLOW(A) is in FOLLOW(B).
+
 struct FirstSet
 {
     char Terminal_;
