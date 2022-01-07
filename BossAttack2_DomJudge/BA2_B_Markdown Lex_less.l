@@ -33,23 +33,6 @@
         {
             printf("%c", input[length_ - 1]);
         }
-        /*
-        if (input[length_ - 1] == '\n')
-        {
-            if (input[length_ - 2]=='\r')
-            {
-            }
-            else
-            {
-                printf("%c", input[length_ - 2]);
-            }
-        }
-        else
-        {
-            printf("%c", input[length_ - 2]);
-            printf("%c", input[length_ - 1]);
-        }
-        */
         printf("</h%d>", counter);
     }
     /*
@@ -121,11 +104,6 @@
             printf("%c", input[i]);
         }
         printf("\" src=\"");
-        // printf("length_: %d", length_);
-        // printf("counter1: %d", counter1);
-        // printf("len1: %d", len1);
-        // printf("counter2: %d", counter2);
-        // printf("len2: %d", len2);
         for(int i = counter2 + counter1 + len1; i < counter2 + counter1 + len1 + len2; i++)
         {
             printf("%c", input[i]);
@@ -188,9 +166,9 @@
     }
 %}
 %%
-^[#]*" "(.)+  { titlePrint(yytext, yyleng); }
-"---"  { linePrint(); }
-^"\!\["(.)+"\]\("(.)+"\)"  { picPrint(yytext, yyleng); }
+^[#]*" "(.)+                { titlePrint(yytext, yyleng); }
+"---"                       { linePrint(); }
+^"\!\["(.)+"\]\("(.)+"\)"   { picPrint(yytext, yyleng); }
 ^"\-"" \["[X|x| ]"\] "(.)+  { boxPrint(yytext, yyleng); }
 %%
 int main(int argc, char *argv[]) {
