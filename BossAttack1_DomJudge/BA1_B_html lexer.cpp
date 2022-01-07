@@ -2,8 +2,6 @@
 
 // all test case will be legal
 
-// 1415 FIN
-
 std::string inputString;
 
 void stringManipulate()
@@ -66,7 +64,6 @@ int main()
             break;
         }
 
-        // std::cout << id_now << "\n";
         if ((id_now + 1 < inputString.length()) && (inputString[id_now] == '<') && (inputString[id_now + 1] == '/'))
         {
             inTagDef = true;
@@ -169,7 +166,6 @@ int main()
             if ((QUOTE_STRING) && (inputString[id_now] == '\'' || inputString[id_now] == '"'))
             {
                 QUOTE_STRING = false;
-                // std::cout << "\n";
             }
             else
             {
@@ -187,8 +183,6 @@ int main()
         }
         id_now += 1;
     }
-
-    // std::cout << inputString << " " << inputString.length() << "\n";
 
     return 0;
 }

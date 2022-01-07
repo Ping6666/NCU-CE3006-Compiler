@@ -1,7 +1,5 @@
 #include <iostream>
 
-// 1320 FIN
-
 char tmp[25];
 int index = 0;
 

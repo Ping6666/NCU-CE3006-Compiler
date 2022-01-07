@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
 
-// 2240 FIN
-
 // DEBUG
 // bool print_check = true;
 bool print_check = false;
