@@ -106,7 +106,6 @@ void vectorAddItem(GrammarSet grammarSet, int select)
             /*
             this part just for the ans sort
             */
-
             // if no matching item
             (*ptr).insert((*ptr).begin() + i, grammarSet);
             return;
@@ -114,7 +113,6 @@ void vectorAddItem(GrammarSet grammarSet, int select)
     }
 
     (*ptr).push_back(grammarSet);
-
     return;
 }
 
